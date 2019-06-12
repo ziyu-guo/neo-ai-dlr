@@ -161,7 +161,7 @@ DLRBackend get_backend(const std::string &dirname) {
 }
 
 DLRModel::DLRModel(const std::string& model_path,
-                   const DLContext& ctx) {
+                   const std::vector<DLContext>& ctx) {
   backend_ = get_backend(model_path);
   ctx_ = ctx;
 
@@ -191,7 +191,7 @@ void DLRModel::SetupTVMModule(const std::string& model_path) {
   }
   tvm_graph_runtime_ =
     std::make_shared<tvm::runtime::GraphRuntime>();
-  tvm_graph_runtime_->Init(json_blob.str(), module, {ctx_});
+  tvm_graph_runtime_->Init(json_blob.str(), module, ctx_);
   tvm_graph_runtime_->LoadParams(param_blob.str());
 
   tvm_module_ = std::make_shared<tvm::runtime::Module>(
@@ -565,12 +565,15 @@ extern "C" int GetDLRNumOutputs(DLRModelHandle* handle,
  */
 extern "C" int CreateDLRModel(DLRModelHandle* handle,
                               const char* model_path,
-                              int dev_type, int dev_id) {
+                              int* dev_type, int* dev_id, int num_ctx) {
   API_BEGIN();
   const std::string model_path_string(model_path);   
-  DLContext ctx;
-  ctx.device_type = static_cast<DLDeviceType>(dev_type);
-  ctx.device_id = dev_id;
+  std::vector<DLContext> ctx(num_ctx);
+  for (int i = 0; i < num_ctx; i++) {
+    ctx[i].device_type = static_cast<DLDeviceType>(dev_type[i]);
+    ctx[i].device_id = dev_id[i];
+  }
+
   DLRModel *model = new DLRModel(model_path_string, 
                                 ctx);
   *handle = model;

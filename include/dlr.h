@@ -5,7 +5,7 @@
 #include <tvm/runtime/module.h>
 #include <treelite/predictor.h>
 #include <treelite/c_api_runtime.h>
-#include "../3rdparty/treelite/dmlc-core/src/io/filesys.h"
+#include "../3rdparty/treelite/dmlc-core/include/dmlc/filesystem.h"
 //#include <graph/graph_runtime.cc>
 //#include <graph/debug/graph_runtime_debug.cc>
 #include <runtime_base.h>
@@ -83,7 +83,7 @@ class DLRModel {
   std::vector<const DLTensor *> outputs_;
   std::vector<std::string> input_names_;
   std::vector<std::string> weight_names_;
-  DLContext ctx_;
+  std::vector<DLContext> ctx_;
   /* fields for Treelite model */
   PredictorHandle treelite_model_;
   size_t treelite_num_feature_;
@@ -96,7 +96,7 @@ class DLRModel {
   /*! /brief Load model files from given folder path.
    */
   explicit DLRModel(const std::string& model_path,
-                    const DLContext& ctx);
+                    const std::vector<DLContext>& ctx);
 
   /*! /brief Get the output of the given input x.
    */
@@ -147,7 +147,7 @@ typedef void* DLRModelHandle;
  */
 DLR_DLL int CreateDLRModel(DLRModelHandle *handle,
                            const char *model_path,
-                           int dev_type, int dev_id);
+                           int* dev_type, int* dev_id, int num_ctx = 1);
 
 /*!
  \brief Deletes a DLR model.

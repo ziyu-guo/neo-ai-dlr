@@ -1,6 +1,6 @@
 # coding: utf-8
 import ctypes
-from ctypes import cdll, c_void_p, c_int, c_float, c_char_p, byref, POINTER, c_longlong
+from ctypes import cdll, c_void_p, c_int, c_int_p, c_float, c_char_p, byref, POINTER, c_longlong
 import numpy as np
 import os
 from .api import IDLRModel
@@ -90,7 +90,7 @@ class DLRModelImpl(IDLRModel):
                                        byref(backend)))
         return backend.value.decode('ascii')
 
-    def __init__(self, model_path, dev_type='cpu', dev_id=0):
+    def __init__(self, model_path, dev_types='cpu', dev_ids=0):
         if not os.path.exists(model_path):
             raise ValueError("model_path %s doesn't exist" % model_path)
 
@@ -101,10 +101,20 @@ class DLRModelImpl(IDLRModel):
             'opencl': 4,
         }
 
+        if type(dev_types) is int and type(dev_ids) is int:
+            dev_type_list = [dev_types]
+            dev_id_list = [dev_ids]
+        elif type(dev_types) is list and type(dev_ids) is list:
+            dev_type_list = [device_table[item] for item in dev_types]
+            dev_id_list = dev_ids
+        else:
+            raise ValueError("Number of device types and device IDs do not match")
+
         _check_call(_LIB.CreateDLRModel(byref(self.handle),
                                         c_char_p(model_path.encode()),
-                                        c_int(device_table[dev_type]),
-                                        c_int(dev_id)))
+                                        c_int_p(device_table[dev_type_list]),
+                                        c_int_p(dev_id_list),
+                                        c_int(len(dev_type_list))))
 
         self.backend = self._parse_backend()
 
