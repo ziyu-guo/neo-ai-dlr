@@ -207,6 +207,11 @@ add_custom_target(combined_lib
 
 # Tests
 set(TEST_EXECS "")
+file(GLOB TEST_SRCS test/cpp/*.cc)
+find_library(GTEST_LIB NAMES libgtest.a gtest)
+
+# Tests
+set(TEST_EXECS "")
 file(GLOB TEST_SRCS tests/cpp/*.cc)
 find_library(GTEST_LIB NAMES libgtest.a gtest)
 
@@ -219,7 +224,7 @@ foreach(__srcpath ${TEST_SRCS})
     target_link_libraries(${__execname} PRIVATE -Wl,--whole-archive dlr_static -Wl,--no-whole-archive -fuse-ld=gold)
   else (ANDROID_BUILD)
     add_executable(${__execname} ${__srcpath} $<TARGET_OBJECTS:objdlr>)
-    target_link_libraries(${__execname} PRIVATE treelite_runtime_static tvm_runtime_static ${TVM_RUNTIME_LINKER_LIBS})     
+    target_link_libraries(${__execname} PRIVATE treelite_runtime_static tvm_runtime_static ${TVM_RUNTIME_LINKER_LIBS} -lpthread)     
   endif ()
   set_output_directory(${__execname} ${PROJECT_SOURCE_DIR}/bin)
   set_target_properties(${__execname} PROPERTIES EXCLUDE_FROM_ALL 1)
