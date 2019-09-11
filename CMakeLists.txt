@@ -206,19 +206,13 @@ add_custom_target(combined_lib
         )
 
 # Tests
-set(TEST_EXECS "")
-file(GLOB TEST_SRCS test/cpp/*.cc)
-find_library(GTEST_LIB NAMES libgtest.a gtest)
+set(DEMO_EXECS "")
+file(GLOB DEMO_SRCS demo/cpp/*.cc)
 
-# Tests
-set(TEST_EXECS "")
-file(GLOB TEST_SRCS tests/cpp/*.cc)
-find_library(GTEST_LIB NAMES libgtest.a gtest)
-
-foreach(__srcpath ${TEST_SRCS})
+foreach(__srcpath ${DEMO_SRCS})
   get_filename_component(__srcname ${__srcpath} NAME)
   string(REPLACE ".cc" "" __execname ${__srcname})
-  list(APPEND TEST_EXECS ${__execname})
+  list(APPEND DEMO_EXECS ${__execname})
   if (ANDROID_BUILD)
     add_executable(${__execname} ${__srcpath})
     target_link_libraries(${__execname} PRIVATE -Wl,--whole-archive dlr_static -Wl,--no-whole-archive -fuse-ld=gold)
@@ -230,7 +224,7 @@ foreach(__srcpath ${TEST_SRCS})
   set_target_properties(${__execname} PROPERTIES EXCLUDE_FROM_ALL 1)
   set_target_properties(${__execname} PROPERTIES EXCLUDE_FROM_DEFAULT_BUILD 1)
 endforeach()
-add_custom_target(dlrtest DEPENDS ${TEST_EXECS})
+add_custom_target(demo DEPENDS ${DEMO_EXECS})
 
 # Group sources
 #auto_source_group("${SOURCES}")
